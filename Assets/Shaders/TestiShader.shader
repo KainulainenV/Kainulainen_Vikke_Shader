@@ -36,6 +36,7 @@ Shader"Custom/TestiShader"
                 {
                     float4 positionHCS : SV_POSITION;
                     float3 positionWS : TEXCOORD0;
+                    
                 };
 
                 // SRP Batcher compatible
@@ -50,14 +51,17 @@ Shader"Custom/TestiShader"
     
                     output.positionHCS = TransformObjectToHClip(input.positionOS);
                     output.positionWS = TransformObjectToWorld(input.positionOS);
+
+                    output.positionWS = input.normalOS;
                     return output;
                 }
 
-                float4 Frag(const Varyings input) : SV_TARGET
+                float3 Frag(const Varyings input) : SV_TARGET
                 {
-                    return _Color * clamp(input.positionWS.x, 0, 1);
+                    half3 normalColor = input.positionWS * 0.5 + 0.5;
+                    return _Color * normalColor;
                 }            
-
+                //clamp(input.positionWS.x, 0, 1)
 
                 ENDHLSL
             }                       
