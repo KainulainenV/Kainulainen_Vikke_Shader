@@ -2,6 +2,8 @@ Shader"Custom/TestiShader"
 {
     Properties
     {
+        [KeywordEnum(World, Local)]
+        _ColorKeyword("Color", Float) = 0
         _Color("Color", Color) = (1, 1, 1, 1)
     }
 
@@ -23,6 +25,8 @@ Shader"Custom/TestiShader"
                 HLSLPROGRAM
                 #pragma vertex Vert
                 #pragma fragment Frag
+
+                #pragma shader_feature_local_fragment LOCAL_COORDINATES_WORLD LOCAL_COORDINATES_OBJECT
 
                 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
 
@@ -48,18 +52,41 @@ Shader"Custom/TestiShader"
                 Varyings Vert(const Attributes input)
                 {
                     Varyings output;
-    
-                    output.positionHCS = TransformObjectToHClip(input.positionOS);
-                    output.positionWS = TransformObjectToWorld(input.positionOS);
 
-                    output.positionWS = input.normalOS;
+                    //float3 newPosition = input.positionOS + float3(0,1,0);
+
+                    // #if LOCAL_COORDINATES_WORLD
+                    output.positionHCS = mul(UNITY_MATRIX_P, mul(UNITY_MATRIX_V, mul(UNITY_MATRIX_M, float4(input.positionOS, 1))));
+                    output.positionWS = input.positionOS;
+                    // #elif LOCAL_COORDINATES_OBJECT
+                    // float4 newPosition = float4(input.positionOS + float3(0, 1, 0), 1);
+                    // output.positionHCS = mul(UNITY_MATRIX_P, mul(UNITY_MATRIX_V, mul(UNITY_MATRIX_M, newPosition)));
+                    // output.positionWS = newPosition.xyz;
+                    // #endif
+
+
+
+
+
+                    
+    
+                    //output.positionHCS = mul(UNITY_MATRIX_P, mul(UNITY_MATRIX_V, mul(UNITY_MATRIX_M, float4(input.positionOS, 1))));
+                    //output.positionHCS = TransformObjectToHClip(input.positionOS);
+                    //output.positionWS = TransformObjectToWorld(input.positionOS);
+                    //output.positionWS = mul(UNITY_MATRIX_M, input.positionOS + newPosition);
+
+                    //const float3 os = mul(UNITY_MATRIX_I_M, output.positionWS)
+                    //output.positionWS = input.normalOS;
                     return output;
                 }
 
                 float3 Frag(const Varyings input) : SV_TARGET
                 {
-                    half3 normalColor = input.positionWS * 0.5 + 0.5;
-                    return _Color * normalColor;
+                    float4 col = 1;
+
+                    //half3 normalColor = input.positionWS * 0.5 + 0.5;
+                    
+                    return _Color * clamp(input.positionWS.x, 0, 1);
                 }            
                 //clamp(input.positionWS.x, 0, 1)
 
