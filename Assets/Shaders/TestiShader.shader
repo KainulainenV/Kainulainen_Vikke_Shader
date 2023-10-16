@@ -64,11 +64,7 @@ Shader"Custom/TestiShader"
                     // output.positionWS = newPosition.xyz;
                     // #endif
 
-
-
-
-
-                    
+               
     
                     //output.positionHCS = mul(UNITY_MATRIX_P, mul(UNITY_MATRIX_V, mul(UNITY_MATRIX_M, float4(input.positionOS, 1))));
                     //output.positionHCS = TransformObjectToHClip(input.positionOS);
