@@ -3,6 +3,9 @@ Shader "Custom/MossyRock"
     Properties
     {
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
+        _SecondaryTex ("Albedo (RGB)", 2D) = "white" {}
+        _StripeCount("Stripe Count", range(0, 10)) = 0.5
+        _Fade("Fade", range(0, 1)) = 0.5
     }
     SubShader
     {
@@ -20,9 +23,14 @@ Shader "Custom/MossyRock"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             
             TEXTURE2D(_MainTex);
+            TEXTURE2D(_SecondaryTex);
             SAMPLER(sampler_MainTex);
+            SAMPLER(sampler_SecondaryTex);
 
             float4 _MainTex_ST;
+            float4 _SecondaryTex_ST;
+            float _StripeCount;
+            float _Fade;
 
             // Input struct
             struct Attributes
@@ -48,16 +56,16 @@ Shader "Custom/MossyRock"
                 output.positionWS = TransformObjectToWorld(input.positionOS);
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
 
-                output.uv = input.uv * _MainTex_ST.xy + _MainTex_ST.zw + _Time.y * float2(0.5, 1);
+                output.uv = input.uv;// * _MainTex_ST.xy + _MainTex_ST.zw;// + _Time.y * float2(0.5, 1);
 
                 return output;
             }
 
             half4 Fragment(Varyings input) : SV_TARGET{
 
-                
+                float stripe = _Fade * (1.0 + sin(input.uv.x * _StripeCount * 2 * 3.14159265358));
 
-                return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+                return lerp(SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv * _MainTex_ST.xy + _MainTex_ST.zw), SAMPLE_TEXTURE2D(_SecondaryTex, sampler_SecondaryTex, input.uv * _SecondaryTex_ST.xy + _SecondaryTex_ST.zw), stripe);
             }
 
 
