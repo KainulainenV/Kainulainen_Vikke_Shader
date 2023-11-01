@@ -66,7 +66,10 @@ Shader "Custom/BlinnPhong"
 
                 float3 ambientLighting = 0.1 * light.color;
                 float3 diffuse = saturate(dot(input.normalWS, light.direction)) * light.color;
-            
+
+                //const VertexPositionInputs position_inputs = GetVertexPositionInputs(/*positionOS*/)
+                //const VertexNormalInputs normal_inputs = GetVertexNormalInputs(/*normalOS, tangentOS*/)            
+
                 float3 viewDirection = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 float3 halfwayVector = normalize(light.direction + viewDirection);
 
