@@ -6,6 +6,8 @@ Shader "Custom/ProximityShader"
         _PlayerPosition("Player Position", Vector) = (0, 0, 0, 0)
         _PlayerPosition2("Player Position", Vector) = (0, 0, 0, 0)
         _DistanceAttuenation("Distance Attuenation", range(1, 10)) = 1
+
+        _WavesFrquency("Waves Frequency", range(1, 50)) = 1
     }
     SubShader
     {
@@ -26,6 +28,7 @@ Shader "Custom/ProximityShader"
             float3 _PlayerPosition;
             float3 _PlayerPosition2;
             float _DistanceAttuenation;
+            float _WavesFrquency;
 
             // Input struct
             struct Attributes
@@ -53,6 +56,15 @@ Shader "Custom/ProximityShader"
 
                 output.uv = input.uv * _MainTex_ST.xy + _MainTex_ST.zw;// + _Time.y * float2(0.5, 1);
 
+                // Vertex deform
+                const float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+               
+                float3 dir = positionWS - _PlayerPosition;
+                float distance = length(dir);
+                distance = saturate(1 - distance / _DistanceAttuenation);
+
+                output.positionHCS = TransformWorldToHClip(positionWS + normalize(dir) * (sin(distance * _WavesFrquency + _Time.y*1) + 1));
+
                 return output;
             }
 
@@ -63,10 +75,11 @@ Shader "Custom/ProximityShader"
                 float distance = length(_PlayerPosition - input.positionWS);
                 distance = saturate(1 - distance / _DistanceAttuenation);
 
-                float distance2 = length(_PlayerPosition2 - input.positionWS);
-                distance2 = saturate(1 - distance2 / _DistanceAttuenation);
+                // float distance2 = length(_PlayerPosition2 - input.positionWS);
+                // distance2 = saturate(1 - distance2 / _DistanceAttuenation);
+                float4 waves = (sin(distance * _WavesFrquency + _Time.y*1) + 1) * color1;
 
-                return lerp(0, (sin(distance * 50 /*+ _Time.y*10*/) + 1) * color1, distance);
+                return lerp(0, waves, distance);
                 //return lerp(0, color1, distance + distance2);
             }
 
